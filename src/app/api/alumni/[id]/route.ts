@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { deleteAlumni, getAlumniById, updateAlumni } from "@/lib/store";
+import { deleteAlumni, fetchAlumniById as getAlumniById, updateAlumni } from "@/lib/api";
 import { alumniSchema } from "@/lib/schema";
 import { ApiError } from "@/lib/types";
 

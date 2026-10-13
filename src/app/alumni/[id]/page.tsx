@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { AlumniAvatar } from "@/components/alumni/Avatar";
 import { DeleteAlumniButton } from "@/components/alumni/DeleteAlumniButton";
 import { EmptyState, LoadingState } from "@/components/alumni/states";
-import { getAlumniById } from "@/lib/store";
+import { fetchAlumniById } from "@/lib/api";
 import { ApiError } from "@/lib/types";
 
 function Detail({
@@ -43,7 +43,7 @@ async function ProfileView({ params }: { params: Promise<{ id: string }> }) {
 
   let data;
   try {
-    data = await getAlumniById(id);
+    data = await fetchAlumniById(id);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return (

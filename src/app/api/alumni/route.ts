@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { createAlumni, listAlumni } from "@/lib/store";
+import { createAlumni, fetchAlumniList } from "@/lib/api";
 import { alumniSchema } from "@/lib/schema";
 import { SORT_OPTIONS } from "@/lib/query";
 import type { SortOption } from "@/lib/types";
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const page = params.get("page");
   const limit = params.get("limit");
 
-  const result = await listAlumni(
+  const result = await fetchAlumniList(
     {
       search: params.get("search") ?? undefined,
       year: year ? Number(year) : undefined,

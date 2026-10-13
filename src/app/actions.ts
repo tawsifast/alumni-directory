@@ -5,7 +5,7 @@ import {
   createAlumni,
   deleteAlumni as deleteAlumniRecord,
   updateAlumni as updateAlumniRecord,
-} from "@/lib/store";
+} from "@/lib/api";
 import { alumniSchema } from "@/lib/schema";
 import { ApiError, type ActionResult, type AlumniFormData } from "@/lib/types";
 

@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditAlumniForm } from "@/components/alumni/EditAlumniForm";
 import { EmptyState, LoadingState } from "@/components/alumni/states";
-import { getAlumniById } from "@/lib/store";
+import { fetchAlumniById } from "@/lib/api";
 import { ApiError, type AlumniFormData } from "@/lib/types";
 
 async function EditView({ params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ async function EditView({ params }: { params: Promise<{ id: string }> }) {
 
   let data: AlumniFormData;
   try {
-    const record = await getAlumniById(id);
+    const record = await fetchAlumniById(id);
     data = {
       fullName: record.fullName,
       email: record.email,

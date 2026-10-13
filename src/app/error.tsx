@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 
 export default function Error({
   error,
-  retry,
+  reset,
 }: {
   error: Error & { digest?: string };
-  retry: () => void;
+  reset: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -25,7 +25,7 @@ export default function Error({
           Something went wrong on our end. You can try again or head back home.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <Button onClick={() => retry()}>Try again</Button>
+          <Button onClick={() => reset()}>Try again</Button>
           <Button asChild variant="outline">
             <Link href="/">Go home</Link>
           </Button>

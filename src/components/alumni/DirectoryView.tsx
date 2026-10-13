@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { listAlumni } from "@/lib/store";
+import { fetchAlumniList } from "@/lib/api";
 import { parseDirectoryParams, toAlumniQuery, toSearchString } from "@/lib/query";
 import { AlumniList } from "./AlumniList";
 import { DirectoryControls } from "./DirectoryControls";
-import { EmptyState, LoadingState } from "./states";
+import { EmptyState, ErrorState, LoadingState } from "./states";
 
 export async function DirectoryView({
   searchParams,
@@ -14,7 +14,34 @@ export async function DirectoryView({
 }) {
   const resolved = await searchParams;
   const params = parseDirectoryParams(resolved);
-  const data = await listAlumni(toAlumniQuery(params));
+
+  let data;
+  try {
+    data = await fetchAlumniList(toAlumniQuery(params));
+  } catch (error) {
+    return (
+      <div>
+        <section className="bg-hero text-primary-foreground">
+          <div className="mx-auto max-w-6xl px-4 py-14">
+            <p className="text-sm uppercase tracking-widest text-accent">Alumni Directory</p>
+            <h1 className="mt-2 max-w-2xl text-4xl font-semibold sm:text-5xl">
+              Find the people who walked these halls before you.
+            </h1>
+          </div>
+        </section>
+        <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+          <ErrorState
+            message={
+              error instanceof Error
+                ? error.message
+                : "Could not connect to the backend server. Please verify the backend is running."
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
   const sort = params.sort ?? "name-asc";
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
   const hasFilters = !!(params.search || params.year || params.department);
