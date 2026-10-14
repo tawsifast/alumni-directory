@@ -10,7 +10,7 @@ export function AlumniCard({ alumni }: { alumni: Alumni }) {
       className="group flex flex-col gap-4 rounded-lg border bg-card p-5 shadow-card transition hover:-translate-y-0.5 hover:border-primary/40"
     >
       <div className="flex items-center gap-3">
-        <AlumniAvatar name={alumni.fullName} className="h-12 w-12 text-base" />
+        <AlumniAvatar name={alumni.fullName} avatarUrl={alumni.avatarUrl} className="h-12 w-12 text-base" />
         <div className="min-w-0">
           <h3 className="truncate text-lg leading-tight group-hover:text-primary">
             {alumni.fullName}

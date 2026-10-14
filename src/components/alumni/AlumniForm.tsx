@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
+import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { alumniformSchema } from "@/lib/schema";
 import { DEPARTMENTS, type ActionResult, type AlumniFormData } from "@/lib/types";
+import { AlumniAvatar } from "./Avatar";
 
 type FormValues = Record<keyof AlumniFormData, string>;
 type FormErrors = Partial<Record<keyof AlumniFormData, string>>;
@@ -14,6 +16,47 @@ interface AlumniFormProps {
   action: (data: AlumniFormData) => Promise<ActionResult>;
   onSuccess: (result: ActionResult) => void;
   onCancel: () => void;
+}
+
+function resizeImageFile(file: File, maxSize = 256): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 export function AlumniForm({
@@ -31,14 +74,34 @@ export function AlumniForm({
     currentCompany: initialValues?.currentCompany ?? "",
     currentPosition: initialValues?.currentPosition ?? "",
     location: initialValues?.location ?? "",
+    avatarUrl: initialValues?.avatarUrl ?? "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [fileError, setFileError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
 
   function update(field: keyof FormValues, value: string) {
     setValues((v) => ({ ...v, [field]: value }));
     setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Please choose a valid image file (JPEG, PNG, WebP).");
+      return;
+    }
+
+    setFileError(null);
+    try {
+      const dataUrl = await resizeImageFile(file, 256);
+      update("avatarUrl", dataUrl);
+    } catch {
+      setFileError("Could not process image file. Please try another.");
+    }
   }
 
   function handleSubmit(e: FormEvent) {
@@ -60,6 +123,7 @@ export function AlumniForm({
       currentCompany: d.currentCompany || null,
       currentPosition: d.currentPosition || null,
       location: d.location || null,
+      avatarUrl: d.avatarUrl || null,
     };
 
     startTransition(async () => {
@@ -131,6 +195,58 @@ export function AlumniForm({
         {field("currentCompany", "Current company")}
         {field("currentPosition", "Current position")}
         {field("location", "Location")}
+
+        <div className="space-y-2 sm:col-span-2">
+          <label className="text-sm font-medium">Profile photo</label>
+          <div className="flex flex-col gap-4 rounded-md border border-input/60 bg-muted/20 p-3 sm:flex-row sm:items-center">
+            <AlumniAvatar
+              name={values.fullName || "Alumni"}
+              avatarUrl={values.avatarUrl}
+              className="h-16 w-16 text-lg border-2 border-card shadow-xs"
+            />
+            <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <label
+                  htmlFor="photo-file"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Upload className="h-3.5 w-3.5 text-muted-foreground" />
+                  Choose from computer
+                  <input
+                    id="photo-file"
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={handleFileChange}
+                  />
+                </label>
+                {values.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => update("avatarUrl", "")}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" /> Remove photo
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Or URL:</span>
+                <input
+                  id="avatarUrl"
+                  type="url"
+                  placeholder="https://example.com/photo.jpg"
+                  value={values.avatarUrl.startsWith("data:") ? "" : values.avatarUrl}
+                  onChange={(e) => update("avatarUrl", e.target.value)}
+                  className="field py-1 text-xs"
+                  aria-invalid={!!errors.avatarUrl}
+                />
+              </div>
+            </div>
+          </div>
+          {fileError && <p className="text-xs text-destructive">{fileError}</p>}
+          {errors.avatarUrl && <p className="text-xs text-destructive">{errors.avatarUrl}</p>}
+        </div>
       </div>
       <div className="flex justify-end gap-2 border-t pt-5">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>

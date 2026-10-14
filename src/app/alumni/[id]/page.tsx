@@ -66,7 +66,7 @@ async function ProfileView({ params }: { params: Promise<{ id: string }> }) {
       <div className="h-24 bg-hero" />
       <div className="px-6 pb-6">
         <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <AlumniAvatar name={data.fullName} className="h-24 w-24 border-4 border-card text-3xl" />
+          <AlumniAvatar name={data.fullName} avatarUrl={data.avatarUrl} className="h-24 w-24 border-4 border-card text-3xl" />
           <div className="flex gap-2">
             <Button asChild>
               <Link href={`/alumni/${id}/edit`}>

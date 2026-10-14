@@ -21,6 +21,7 @@ async function EditView({ params }: { params: Promise<{ id: string }> }) {
       currentCompany: record.currentCompany,
       currentPosition: record.currentPosition,
       location: record.location,
+      avatarUrl: record.avatarUrl,
     };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {

@@ -22,6 +22,7 @@ export const alumniformSchema = z.object({
   currentCompany: z.string().trim().max(100, "Max 100 characters"),
   currentPosition: z.string().trim().max(100, "Max 100 characters"),
   location: z.string().trim().max(100, "Max 100 characters"),
+  avatarUrl: z.string().trim().max(1000000, "Image is too large").optional().or(z.literal("")),
 });
 
 export type AlumniFormValues = z.infer<typeof alumniformSchema>;
@@ -44,4 +45,5 @@ export const alumniSchema = z.object({
   currentCompany: z.string().trim().max(100, "Max 100 characters").nullish(),
   currentPosition: z.string().trim().max(100, "Max 100 characters").nullish(),
   location: z.string().trim().max(100, "Max 100 characters").nullish(),
+  avatarUrl: z.string().trim().max(1000000, "Image is too large").nullish(),
 });

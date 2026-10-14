@@ -7,6 +7,7 @@ export interface Alumni {
   currentCompany?: string | null | undefined;
   currentPosition?: string | null | undefined;
   location?: string | null | undefined;
+  avatarUrl?: string | null | undefined;
   createdAt: string;
   updatedAt: string;
 }
