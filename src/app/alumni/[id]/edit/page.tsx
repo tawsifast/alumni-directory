@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { requireAdmin } from "@/lib/auth-server";
 import { Button } from "@/components/ui/button";
 import { EditAlumniForm } from "@/components/alumni/EditAlumniForm";
 import { EmptyState, LoadingState } from "@/components/alumni/states";
@@ -43,7 +44,10 @@ async function EditView({ params }: { params: Promise<{ id: string }> }) {
   return <EditAlumniForm id={id} initialValues={data} />;
 }
 
-export default function Page(props: PageProps<"/alumni/[id]/edit">) {
+export default async function Page(props: PageProps<"/alumni/[id]/edit">) {
+  // Strictly enforce ADMIN role on the server
+  await requireAdmin();
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <Link

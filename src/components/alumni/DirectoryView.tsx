@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "@/lib/auth-server";
 import { Button } from "@/components/ui/button";
 import { fetchAlumniList } from "@/lib/api";
 import { parseDirectoryParams, toAlumniQuery, toSearchString } from "@/lib/query";
@@ -14,6 +16,18 @@ export async function DirectoryView({
 }) {
   const resolved = await searchParams;
   const params = parseDirectoryParams(resolved);
+
+  const session = await getServerSession();
+  const isAdmin = session?.user.role === "ADMIN";
+
+  let savedIds: string[] = [];
+  if (session?.user) {
+    const saved = await prisma.savedAlumni.findMany({
+      where: { userId: session.user.id },
+      select: { alumniId: true },
+    });
+    savedIds = saved.map((s) => s.alumniId);
+  }
 
   let data;
   try {
@@ -77,24 +91,24 @@ export async function DirectoryView({
             message={
               hasFilters
                 ? "Try a different name or clear the filters."
-                : "No alumni have been added yet."
+                : "No alumni records have been added yet."
             }
             action={
               hasFilters ? (
                 <Button asChild variant="outline" size="sm">
                   <Link href="/">Clear filters</Link>
                 </Button>
-              ) : (
+              ) : isAdmin ? (
                 <Button asChild size="sm">
                   <Link href="/alumni/new">
                     <Plus className="h-4 w-4" /> Add the first alumnus
                   </Link>
                 </Button>
-              )
+              ) : undefined
             }
           />
         ) : (
-          <AlumniList alumni={data.data} />
+          <AlumniList alumni={data.data} savedIds={savedIds} />
         )}
 
         {totalPages > 1 && (

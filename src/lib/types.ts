@@ -8,8 +8,8 @@ export interface Alumni {
   currentPosition?: string | null | undefined;
   location?: string | null | undefined;
   avatarUrl?: string | null | undefined;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 /** Data sent when creating or updating an alumnus. */
@@ -57,3 +57,34 @@ export const DEPARTMENTS = [
   "Mathematics",
   "Physics",
 ];
+
+export interface User {
+  id: string;
+  name: string;
+  fullName?: string;
+  email: string;
+  role: "USER" | "ADMIN" | string;
+  image?: string | null;
+  avatarUrl?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  data?: User;
+}
+
+export interface SavedAlumniItem {
+  id: string;
+  savedAt: string | Date;
+  alumni: Alumni;
+}
+
+export interface ToggleSaveResult {
+  ok: boolean;
+  saved?: boolean;
+  error?: string;
+}
+

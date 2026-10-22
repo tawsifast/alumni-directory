@@ -11,8 +11,11 @@ import {
   Pencil,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "@/lib/auth-server";
 import { Button } from "@/components/ui/button";
 import { AlumniAvatar } from "@/components/alumni/Avatar";
+import { BookmarkButton } from "@/components/alumni/BookmarkButton";
 import { DeleteAlumniButton } from "@/components/alumni/DeleteAlumniButton";
 import { EmptyState, LoadingState } from "@/components/alumni/states";
 import { fetchAlumniById } from "@/lib/api";
@@ -40,6 +43,21 @@ function Detail({
 
 async function ProfileView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const session = await getServerSession();
+  const isAdmin = session?.user.role === "ADMIN";
+
+  let isSaved = false;
+  if (session?.user) {
+    const savedRecord = await prisma.savedAlumni.findUnique({
+      where: {
+        userId_alumniId: {
+          userId: session.user.id,
+          alumniId: id,
+        },
+      },
+    });
+    isSaved = !!savedRecord;
+  }
 
   let data;
   try {
@@ -66,14 +84,34 @@ async function ProfileView({ params }: { params: Promise<{ id: string }> }) {
       <div className="h-24 bg-hero" />
       <div className="px-6 pb-6">
         <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <AlumniAvatar name={data.fullName} avatarUrl={data.avatarUrl} className="h-24 w-24 border-4 border-card text-3xl" />
-          <div className="flex gap-2">
-            <Button asChild>
-              <Link href={`/alumni/${id}/edit`}>
-                <Pencil className="h-4 w-4" /> Edit
-              </Link>
-            </Button>
-            <DeleteAlumniButton id={id} name={data.fullName} />
+          <AlumniAvatar
+            name={data.fullName}
+            avatarUrl={data.avatarUrl}
+            className="h-24 w-24 border-4 border-card text-3xl shadow-md"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Bookmark button for saving cards */}
+            <BookmarkButton
+              alumniId={id}
+              initialSaved={isSaved}
+              alumniName={data.fullName}
+              showLabel
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+            />
+
+            {/* Administrative controls: Only visible to verified ADMIN users */}
+            {isAdmin && (
+              <>
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/alumni/${id}/edit`} className="gap-1.5">
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Link>
+                </Button>
+                <DeleteAlumniButton id={id} name={data.fullName} />
+              </>
+            )}
           </div>
         </div>
         <h1 className="mt-4 text-3xl font-semibold">{data.fullName}</h1>

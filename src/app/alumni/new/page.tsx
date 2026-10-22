@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { requireAdmin } from "@/lib/auth-server";
 import { NewAlumniForm } from "@/components/alumni/NewAlumniForm";
 
-export default function NewAlumniPage() {
+export default async function NewAlumniPage() {
+  // Strictly enforce ADMIN role on the server
+  await requireAdmin();
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <Link

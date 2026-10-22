@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { deleteAlumni, fetchAlumniById as getAlumniById, updateAlumni } from "@/lib/api";
 import { alumniSchema } from "@/lib/schema";
 import { ApiError } from "@/lib/types";
+import { requireAdminApi } from "@/lib/auth-server";
 
 function handleError(error: unknown) {
   if (error instanceof ApiError) {
@@ -21,6 +22,11 @@ export async function GET(_request: NextRequest, context: RouteContext<"/api/alu
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext<"/api/alumni/[id]">) {
+  const authCheck = await requireAdminApi();
+  if (!authCheck.authorized) {
+    return authCheck.response;
+  }
+
   const { id } = await context.params;
 
   let body: unknown;
@@ -39,7 +45,7 @@ export async function PATCH(request: NextRequest, context: RouteContext<"/api/al
   }
 
   try {
-    const updated = await updateAlumni(id, parsed.data);
+    const updated = await updateAlumni(id, parsed.data, authCheck.session.session.token);
     return Response.json(updated);
   } catch (error) {
     return handleError(error);
@@ -47,9 +53,14 @@ export async function PATCH(request: NextRequest, context: RouteContext<"/api/al
 }
 
 export async function DELETE(_request: NextRequest, context: RouteContext<"/api/alumni/[id]">) {
+  const authCheck = await requireAdminApi();
+  if (!authCheck.authorized) {
+    return authCheck.response;
+  }
+
   const { id } = await context.params;
   try {
-    await deleteAlumni(id);
+    await deleteAlumni(id, authCheck.session.session.token);
     return new Response(null, { status: 204 });
   } catch (error) {
     return handleError(error);

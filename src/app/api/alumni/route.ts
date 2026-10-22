@@ -3,6 +3,7 @@ import { createAlumni, fetchAlumniList } from "@/lib/api";
 import { alumniSchema } from "@/lib/schema";
 import { SORT_OPTIONS } from "@/lib/query";
 import type { SortOption } from "@/lib/types";
+import { requireAdminApi } from "@/lib/auth-server";
 
 function parseSort(value: string | null): SortOption | undefined {
   return SORT_OPTIONS.includes(value as SortOption) ? (value as SortOption) : undefined;
@@ -29,6 +30,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authCheck = await requireAdminApi();
+  if (!authCheck.authorized) {
+    return authCheck.response;
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -44,6 +50,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const created = await createAlumni(parsed.data);
+  const created = await createAlumni(parsed.data, authCheck.session.session.token);
   return Response.json(created, { status: 201 });
 }
